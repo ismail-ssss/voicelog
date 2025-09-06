@@ -116,3 +116,7 @@ Built with:
 - **[Bubble Tea](https://github.com/charmbracelet/bubbletea)** - TUI framework
 - **[PortAudio](https://github.com/gordonklaus/portaudio)** - Audio I/O
 - **Go** - Programming language
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
