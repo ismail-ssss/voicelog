@@ -26,6 +26,18 @@ A terminal-based voice memo application built with Go and Bubble Tea.
 - ASCII art speaker visualization with two-tone coloring
 - Professional color scheme with rounded borders
 
+## Screenshots
+
+### Main Screen
+The main interface showing the memo list, ASCII art speaker visualization, and help information.
+
+<img src="voicelog-screenshot-1.png" alt="VoiceLog Main Screen" width="600">
+
+### Settings Screen
+Audio configuration interface displaying hardware/audio settings, available devices, and help.
+
+<img src="voicelog-screenshot-2.png" alt="VoiceLog Settings Screen" width="600">
+
 ## Installation
 
 ### Prerequisites
