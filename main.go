@@ -1034,7 +1034,9 @@ func (m *Model) loadTestFile() {
 	m.selectedIdx = 0 // Select the test file
 
 	// Save the updated memos to metadata
-	saveMemos(m.memos, m.config.MemosPath)
+	if err := saveMemos(m.memos, m.config.MemosPath); err != nil {
+		log.Printf("Error saving memos metadata: %v", err)
+	}
 
 	log.Printf("Test file loaded: %s", testFilename)
 }
@@ -1058,7 +1060,10 @@ func (m *Model) createTestToneFile(filePath string) {
 	numSamples := int(float64(sampleRate) * duration)
 
 	// Write WAV header
-	writeWAVHeader(file, sampleRate, 1, 16, int64(numSamples*2))
+	if err := writeWAVHeader(file, sampleRate, 1, 16, int64(numSamples*2)); err != nil {
+		log.Printf("Error writing WAV header: %v", err)
+		return
+	}
 
 	// Generate sine wave samples
 	for i := 0; i < numSamples; i++ {
@@ -1350,7 +1355,11 @@ func (m *Model) startRecording() {
 	}
 
 	// Write WAV header (we'll update the data size later)
-	writeWAVHeader(file, m.config.SampleRate, m.config.ChannelCount, m.config.BitDepth*8, 0)
+	if err := writeWAVHeader(file, m.config.SampleRate, m.config.ChannelCount, m.config.BitDepth*8, 0); err != nil {
+		log.Printf("Error writing WAV header: %v", err)
+		m.stopRecording()
+		return
+	}
 
 	// Set up audio parameters - try to use device's preferred format
 	params := portaudio.HighLatencyParameters(inputDev, nil)
@@ -1942,7 +1951,11 @@ func getSystemAudioInfo() string {
 	if err := portaudio.Initialize(); err != nil {
 		return fmt.Sprintf("Audio system: Not available (%v)", err)
 	}
-	defer portaudio.Terminate()
+	defer func() {
+		if err := portaudio.Terminate(); err != nil {
+			log.Printf("Error terminating PortAudio: %v", err)
+		}
+	}()
 
 	// Get device count
 	devices, err := portaudio.Devices()
