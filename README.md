@@ -5,7 +5,7 @@
 
 A terminal-based voice memo application built with Go and Bubble Tea.
 
-**Current Version: v1.0.1** - Latest release with bug fixes and improvements.
+**Current Version: v1.0.6** - Latest release with automated Linux builds and bug fixes.
 
 ## Screenshots
 
@@ -45,16 +45,41 @@ Audio configuration interface displaying hardware/audio settings, available devi
 
 ## Installation
 
-### Prerequisites
+### Pre-built Releases
+
+Download the latest release from [GitHub Releases](https://github.com/Cod-e-Codes/voicelog/releases):
+
+- **Windows (amd64)**: `voicelog-v1.0.6-windows-amd64.zip`
+- **Linux (amd64)**: `voicelog-v1.0.6-linux-amd64.tar.gz`
+
+#### Windows Installation
+1. Download `voicelog-v1.0.6-windows-amd64.zip`
+2. Extract the archive
+3. Run `voicelog-windows-amd64.exe`
+
+#### Linux Installation
+1. Download `voicelog-v1.0.6-linux-amd64.tar.gz`
+2. Extract: `tar -xzf voicelog-v1.0.6-linux-amd64.tar.gz`
+3. Install PortAudio: `sudo apt-get install libportaudio2`
+4. Run: `./voicelog-linux-amd64`
+
+### Build from Source
+
+#### Prerequisites
 - Go 1.25 or later
 - PortAudio development libraries
 
-### Windows (MSYS2)
+#### Windows (MSYS2)
 ```bash
 pacman -S mingw-w64-x86_64-portaudio
 ```
 
-### Build and Run
+#### Linux (Ubuntu/Debian)
+```bash
+sudo apt-get install libportaudio2 portaudio19-dev
+```
+
+#### Build and Run
 ```bash
 # Clone the repository
 git clone https://github.com/Cod-e-Codes/voicelog.git
@@ -64,10 +89,10 @@ cd voicelog
 go mod download
 
 # Build the binary
-go build -o voicelog.exe main.go
+go build -o voicelog main.go
 
 # Run
-./voicelog.exe
+./voicelog
 ```
 
 ## Usage
