@@ -32,11 +32,10 @@ jobs:
         CGO_ENABLED: 1
     
     - name: Upload Linux Release Asset
-      uses: actions/upload-release-asset@v1
+      uses: softprops/action-gh-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ./voicelog-${{ github.ref_name }}-linux-amd64.tar.gz
-        asset_name: voicelog-${{ github.ref_name }}-linux-amd64.tar.gz
-        asset_content_type: application/gzip
+        files: voicelog-${{ github.ref_name }}-linux-amd64.tar.gz
+        draft: false
+        prerelease: false
