@@ -1794,7 +1794,9 @@ func (m *Model) deleteMemo() {
 		m.selectedIdx = 0
 	}
 
-	saveMemos(m.memos, m.config.MemosPath)
+	if err := saveMemos(m.memos, m.config.MemosPath); err != nil {
+		log.Printf("Error saving memos metadata: %v", err)
+	}
 }
 
 // Export memo
