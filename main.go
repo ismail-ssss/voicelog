@@ -1588,7 +1588,9 @@ func (m *Model) stopRecording() {
 		m.memos = append([]Memo{memo}, m.memos...)
 
 		// Save metadata
-		saveMemos(m.memos, m.config.MemosPath)
+		if err := saveMemos(m.memos, m.config.MemosPath); err != nil {
+			log.Printf("Error saving memos metadata: %v", err)
+		}
 	}
 
 	// Reset recording data
@@ -1730,7 +1732,9 @@ func (m *Model) renameMemo(newName string) {
 			}
 		}
 
-		saveMemos(m.memos, m.config.MemosPath)
+		if err := saveMemos(m.memos, m.config.MemosPath); err != nil {
+			log.Printf("Error saving memos metadata: %v", err)
+		}
 	}
 }
 
@@ -1756,7 +1760,9 @@ func (m *Model) addTag(tag string) {
 			}
 		}
 
-		saveMemos(m.memos, m.config.MemosPath)
+		if err := saveMemos(m.memos, m.config.MemosPath); err != nil {
+			log.Printf("Error saving memos metadata: %v", err)
+		}
 	}
 }
 
