@@ -1,6 +1,6 @@
 #!/bin/bash
 # VoiceLog Release Script for Windows
-# Builds Windows binaries (amd64, arm64) and creates release packages
+# Builds Windows binary (amd64) and creates release package
 
 set -e
 
@@ -101,7 +101,7 @@ main() {
     export CGO_ENABLED=1
     
     # Build targets
-    declare -a targets=("amd64:voicelog-windows-amd64.exe" "arm64:voicelog-windows-arm64.exe")
+    declare -a targets=("amd64:voicelog-windows-amd64.exe")
     
     for target in "${targets[@]}"; do
         IFS=':' read -r arch binary_name <<< "$target"
@@ -155,7 +155,7 @@ main() {
     print_color "$BLUE" ""
     print_color "$BLUE" "=== Build Summary ==="
     print_color "$GREEN" "Version: $VERSION"
-    print_color "$GREEN" "Targets: Windows (amd64, arm64)"
+    print_color "$GREEN" "Targets: Windows (amd64)"
     print_color "$GREEN" "Output: dist/"
     
     for file in dist/*; do

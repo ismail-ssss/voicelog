@@ -1,5 +1,5 @@
 # VoiceLog Release Script for Windows
-# Builds Windows binaries (amd64, arm64) and creates release packages
+# Builds Windows binary (amd64) and creates release package
 
 param(
     [string]$Version = "",
@@ -86,8 +86,7 @@ try {
     
     # Build targets
     $targets = @(
-        @{Arch = "amd64"; Name = "voicelog-windows-amd64.exe"},
-        @{Arch = "arm64"; Name = "voicelog-windows-arm64.exe"}
+        @{Arch = "amd64"; Name = "voicelog-windows-amd64.exe"}
     )
     
     foreach ($target in $targets) {
@@ -141,7 +140,7 @@ try {
     # Summary
     Write-ColorOutput "`n=== Build Summary ===" $Blue
     Write-ColorOutput "Version: $Version" $Green
-    Write-ColorOutput "Targets: Windows (amd64, arm64)" $Green
+    Write-ColorOutput "Targets: Windows (amd64)" $Green
     Write-ColorOutput "Output: dist/" $Green
     
     Get-ChildItem "dist" | ForEach-Object {
