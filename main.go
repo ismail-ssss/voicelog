@@ -221,7 +221,11 @@ func detectAudioDevices() []AudioDeviceInfo {
 			IsOutput:  true,
 		})
 	}
-	defer portaudio.Terminate()
+	defer func() {
+		if err := portaudio.Terminate(); err != nil {
+			log.Printf("Error terminating PortAudio: %v", err)
+		}
+	}()
 
 	// Get host APIs (e.g., ALSA on Linux, CoreAudio on macOS)
 	hostApis, err := portaudio.HostApis()
@@ -355,7 +359,6 @@ func defaultConfig() Config {
 type AudioDevice struct {
 	stream        *portaudio.Stream // PortAudio stream for recording/playback
 	recordingFile *os.File          // File for recording audio data
-	playbackFile  *os.File          // File for playback audio data
 	playbackData  []int16           // Audio data for playback
 	playbackPos   int               // Current position in playback data
 }
@@ -390,7 +393,6 @@ type Model struct {
 	// Visualization data
 	waveform WaveformData
 	vuMeter  VUMeterData
-	spectrum []float32
 
 	// UI components
 	textInput textinput.Model
@@ -556,9 +558,6 @@ var (
 	mutedStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color(TextMuted))
 
-	errorStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color(AccentOrange))
-
 	successStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color(PrimaryGreen))
 
@@ -598,7 +597,9 @@ func initialModel() Model {
 	config := loadConfig()
 
 	// Create directories if they don't exist
-	os.MkdirAll(config.MemosPath, 0755)
+	if err := os.MkdirAll(config.MemosPath, 0755); err != nil {
+		log.Printf("Error creating memos directory: %v", err)
+	}
 
 	// Initialize text input
 	ti := textinput.New()
@@ -654,7 +655,9 @@ func loadConfig() Config {
 	// Create default config if doesn't exist
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		config := defaultConfig()
-		saveConfig(config)
+		if err := saveConfig(config); err != nil {
+			log.Printf("Error saving default config: %v", err)
+		}
 		return config
 	}
 
@@ -693,7 +696,9 @@ func loadConfig() Config {
 	// Save config if we refreshed devices
 	if needsDeviceRefresh {
 		log.Printf("Saving updated config with new device IDs")
-		saveConfig(config)
+		if err := saveConfig(config); err != nil {
+			log.Printf("Error saving updated config: %v", err)
+		}
 	}
 
 	// Ensure audio settings have valid values
@@ -785,7 +790,9 @@ func writeWAVHeader(file *os.File, sampleRate, channels, bitsPerSample int, data
 func saveConfig(config Config) error {
 	homeDir, _ := os.UserHomeDir()
 	configDir := filepath.Join(homeDir, ConfigDir)
-	os.MkdirAll(configDir, 0755)
+	if err := os.MkdirAll(configDir, 0755); err != nil {
+		return fmt.Errorf("failed to create config directory: %w", err)
+	}
 
 	configPath := filepath.Join(configDir, ConfigFile)
 	data, err := json.MarshalIndent(config, "", "  ")
@@ -803,7 +810,9 @@ func loadMemos(memosPath string) []Memo {
 	// Load metadata
 	metadataPath := filepath.Join(memosPath, MetadataFile)
 	if data, err := os.ReadFile(metadataPath); err == nil {
-		json.Unmarshal(data, &memos)
+		if err := json.Unmarshal(data, &memos); err != nil {
+			log.Printf("Error unmarshaling metadata: %v", err)
+		}
 	}
 
 	// Verify files still exist and update info
@@ -862,13 +871,6 @@ func formatDuration(d time.Duration) string {
 }
 
 // Utility functions
-func max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
-}
-
 func min(a, b int) int {
 	if a < b {
 		return a
@@ -966,7 +968,9 @@ func (m Model) handleSettingsKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch {
 	case key.Matches(msg, keys.Escape), key.Matches(msg, keys.Quit):
 		m.state = StateViewing
-		saveConfig(m.config) // Save settings when exiting
+		if err := saveConfig(m.config); err != nil {
+			log.Printf("Error saving config: %v", err)
+		}
 
 	case key.Matches(msg, keys.Up):
 		if m.settingsSelectedIdx > 0 {
@@ -1060,7 +1064,10 @@ func (m *Model) createTestToneFile(filePath string) {
 	for i := 0; i < numSamples; i++ {
 		t := float64(i) / float64(sampleRate)
 		sample := int16(amplitude * 32767 * math.Sin(2*math.Pi*frequency*t))
-		binary.Write(file, binary.LittleEndian, sample)
+		if err := binary.Write(file, binary.LittleEndian, sample); err != nil {
+			log.Printf("Error writing sample: %v", err)
+			return
+		}
 	}
 }
 
@@ -1420,7 +1427,9 @@ func (m *Model) processAudioInput(in []int16) {
 
 	// Write audio data to file
 	if m.audioDevice != nil && m.audioDevice.recordingFile != nil {
-		binary.Write(m.audioDevice.recordingFile, binary.LittleEndian, in)
+		if err := binary.Write(m.audioDevice.recordingFile, binary.LittleEndian, in); err != nil {
+			log.Printf("Error writing audio data: %v", err)
+		}
 	}
 
 	// Update waveform visualization
@@ -1506,8 +1515,12 @@ func (m *Model) stopRecording() {
 	if m.audioDevice != nil {
 		// Stop and close the stream
 		if m.audioDevice.stream != nil {
-			m.audioDevice.stream.Stop()
-			m.audioDevice.stream.Close()
+			if err := m.audioDevice.stream.Stop(); err != nil {
+				log.Printf("Error stopping stream: %v", err)
+			}
+			if err := m.audioDevice.stream.Close(); err != nil {
+				log.Printf("Error closing stream: %v", err)
+			}
 		}
 
 		// Finalize the WAV file
@@ -1530,8 +1543,12 @@ func (m *Model) stopRecording() {
 			}
 
 			// Update WAV header with correct data size
-			m.audioDevice.recordingFile.Seek(40, 0)
-			binary.Write(m.audioDevice.recordingFile, binary.LittleEndian, uint32(dataSize))
+			if _, err := m.audioDevice.recordingFile.Seek(40, 0); err != nil {
+				log.Printf("Error seeking in recording file: %v", err)
+			}
+			if err := binary.Write(m.audioDevice.recordingFile, binary.LittleEndian, uint32(dataSize)); err != nil {
+				log.Printf("Error writing data size: %v", err)
+			}
 
 			// Close the file
 			m.audioDevice.recordingFile.Close()
@@ -1541,7 +1558,9 @@ func (m *Model) stopRecording() {
 	}
 
 	// Terminate PortAudio
-	portaudio.Terminate()
+	if err := portaudio.Terminate(); err != nil {
+		log.Printf("Error terminating PortAudio: %v", err)
+	}
 
 	// Create new memo with real data
 	if filename != "" {
@@ -1602,7 +1621,9 @@ func (m *Model) startPlayback() {
 
 	if outputDev == nil {
 		log.Printf("No output device available")
-		portaudio.Terminate()
+		if err := portaudio.Terminate(); err != nil {
+			log.Printf("Error terminating PortAudio: %v", err)
+		}
 		return
 	}
 
@@ -1622,7 +1643,9 @@ func (m *Model) startPlayback() {
 	stream, err := portaudio.OpenStream(params, m.processAudioOutput)
 	if err != nil {
 		log.Printf("Error opening playback stream: %v", err)
-		portaudio.Terminate()
+		if err := portaudio.Terminate(); err != nil {
+			log.Printf("Error terminating PortAudio: %v", err)
+		}
 		return
 	}
 
@@ -1631,7 +1654,9 @@ func (m *Model) startPlayback() {
 	// Start playback
 	if err := stream.Start(); err != nil {
 		log.Printf("Error starting playback: %v", err)
-		portaudio.Terminate()
+		if err := portaudio.Terminate(); err != nil {
+			log.Printf("Error terminating PortAudio: %v", err)
+		}
 		return
 	}
 
@@ -1646,7 +1671,9 @@ func (m *Model) startPlayback() {
 // Pause playback
 func (m *Model) pausePlayback() {
 	if m.audioDevice != nil && m.audioDevice.stream != nil {
-		m.audioDevice.stream.Stop()
+		if err := m.audioDevice.stream.Stop(); err != nil {
+			log.Printf("Error stopping playback stream: %v", err)
+		}
 	}
 	m.playing = false
 	m.state = StateViewing
@@ -1658,14 +1685,20 @@ func (m *Model) stopPlayback() {
 	if m.audioDevice != nil {
 		// Stop and close the stream
 		if m.audioDevice.stream != nil {
-			m.audioDevice.stream.Stop()
-			m.audioDevice.stream.Close()
+			if err := m.audioDevice.stream.Stop(); err != nil {
+				log.Printf("Error stopping playback stream: %v", err)
+			}
+			if err := m.audioDevice.stream.Close(); err != nil {
+				log.Printf("Error closing playback stream: %v", err)
+			}
 		}
 		m.audioDevice = nil
 	}
 
 	// Terminate PortAudio
-	portaudio.Terminate()
+	if err := portaudio.Terminate(); err != nil {
+		log.Printf("Error terminating PortAudio: %v", err)
+	}
 
 	m.playing = false
 	m.state = StateViewing
@@ -2212,21 +2245,6 @@ func (m Model) renderTwoToneSpeakerArt(speakerArt []string) string {
 	return lipgloss.JoinVertical(lipgloss.Left, styledLines...)
 }
 
-// Helper function to color specific characters in a line
-func (m Model) colorMixedLine(line, targetChar string, targetColor, defaultColor lipgloss.Style) string {
-	var result strings.Builder
-
-	for _, char := range line {
-		if string(char) == targetChar {
-			result.WriteString(targetColor.Render(string(char)))
-		} else {
-			result.WriteString(defaultColor.Render(string(char)))
-		}
-	}
-
-	return result.String()
-}
-
 // Helper function to color multiple specific characters in a line
 func (m Model) colorMixedLineWithMultiple(line string, charColors map[string]lipgloss.Style) string {
 	var result strings.Builder
@@ -2242,19 +2260,6 @@ func (m Model) colorMixedLineWithMultiple(line string, charColors map[string]lip
 	}
 
 	return result.String()
-}
-
-// Render memo list (now used within renderMainContent)
-func (m Model) renderMemoList() string {
-	if len(m.memos) == 0 {
-		return normalStyle.Render("No memos found. Press SPACE to record your first memo!")
-	}
-
-	// Update the list items to match our memos
-	m.memoList.SetItems(convertMemosToListItems(m.memos))
-
-	// Apply border to memo list
-	return memoListBorderStyle.Render(m.memoList.View())
 }
 
 // Render text input
