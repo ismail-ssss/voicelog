@@ -147,6 +147,26 @@ Built with:
 - **[PortAudio](https://github.com/gordonklaus/portaudio)** - Audio I/O
 - **Go** - Programming language
 
+## Known Issues
+
+### Audio Device Problems
+- **WSL (Windows Subsystem for Linux)**: ALSA errors occur due to missing audio device access. WSL doesn't provide direct access to Windows audio devices.
+- **Windows Standalone**: Missing `libportaudio.dll` when running the pre-built binary outside of MSYS2 environment.
+- **Recording Issues**: Audio recording may not work properly in some environments, though playback and device detection work correctly.
+
+### Workarounds
+- **For WSL**: Use the Windows version instead, as WSL doesn't support direct audio device access.
+- **For Windows**: Run from MSYS2 environment or ensure PortAudio libraries are properly installed.
+- **For Linux**: Ensure you have proper audio device permissions and ALSA/PulseAudio configured.
+
+## Contributing
+
+This project is a work in progress and contributions are welcome! If you encounter issues or have improvements to suggest, please:
+
+1. Check existing issues on GitHub
+2. Create a new issue with detailed information about your environment
+3. Submit pull requests for bug fixes or new features
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
