@@ -21,7 +21,7 @@ jobs:
     - name: Install PortAudio dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y libportaudio2 libportaudio-dev
+        sudo apt-get install -y libportaudio2 portaudio19-dev
     
     - name: Download dependencies
       run: go mod download
