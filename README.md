@@ -5,6 +5,8 @@
 
 A terminal-based voice memo application built with Go and Bubble Tea.
 
+**Current Version: v1.0.1** - Latest release with bug fixes and improvements.
+
 ## Screenshots
 
 ### Main Screen
@@ -44,7 +46,7 @@ Audio configuration interface displaying hardware/audio settings, available devi
 ## Installation
 
 ### Prerequisites
-- Go 1.21 or later
+- Go 1.25 or later
 - PortAudio development libraries
 
 ### Windows (MSYS2)
