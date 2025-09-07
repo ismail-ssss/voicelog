@@ -1,5 +1,7 @@
 # VoiceLog
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/Cod-e-Codes/voicelog)](https://goreportcard.com/report/github.com/Cod-e-Codes/voicelog)
+
 A terminal-based voice memo application built with Go and Bubble Tea.
 
 ## Screenshots
