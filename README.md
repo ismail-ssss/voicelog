@@ -5,7 +5,7 @@
 
 A terminal-based voice memo application built with Go and Bubble Tea.
 
-**Current Version: v1.0.6** - Latest release with automated Linux builds and bug fixes.
+**Current Version: v1.0.6** - Latest release with automated Windows and Linux builds.
 
 ## Screenshots
 
