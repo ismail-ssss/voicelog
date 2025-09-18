@@ -1014,6 +1014,9 @@ func (m *Model) loadTestFile() {
 		m.memos = append([]Memo{testMemo}, m.memos...)
 	}
 
+	// Update list items to reflect new/updated test memo
+	m.memoList.SetItems(convertMemosToListItems(m.memos))
+
 	m.selectedIdx = 0 // Select the test file
 
 	// Save the updated memos to metadata
@@ -1590,6 +1593,8 @@ func (m *Model) stopRecording() {
 
 		// Add to memos list
 		m.memos = append([]Memo{memo}, m.memos...)
+		// Refresh list items to include the new memo
+		m.memoList.SetItems(convertMemosToListItems(m.memos))
 
 		// Save metadata
 		if err := saveMemos(m.memos, m.config.MemosPath); err != nil {
@@ -1739,6 +1744,9 @@ func (m *Model) renameMemo(newName string) {
 			}
 		}
 
+		// Refresh list items to reflect rename without resetting scroll elsewhere
+		m.memoList.SetItems(convertMemosToListItems(m.memos))
+
 		if err := saveMemos(m.memos, m.config.MemosPath); err != nil {
 			log.Printf("Error saving memos metadata: %v", err)
 		}
@@ -1766,6 +1774,9 @@ func (m *Model) addTag(tag string) {
 				break
 			}
 		}
+
+		// Refresh list items to reflect tag change
+		m.memoList.SetItems(convertMemosToListItems(m.memos))
 
 		if err := saveMemos(m.memos, m.config.MemosPath); err != nil {
 			log.Printf("Error saving memos metadata: %v", err)
@@ -1804,6 +1815,9 @@ func (m *Model) deleteMemo() {
 	if err := saveMemos(m.memos, m.config.MemosPath); err != nil {
 		log.Printf("Error saving memos metadata: %v", err)
 	}
+
+	// Refresh list items to reflect deletion without losing scroll position
+	m.memoList.SetItems(convertMemosToListItems(m.memos))
 }
 
 // Export memo
@@ -2187,8 +2201,7 @@ func (m Model) renderMainContent() string {
 		emptyList.SetShowStatusBar(false) // Hide the status bar that shows item count
 		memoListContent = memoListBorderStyle.Render(emptyList.View())
 	} else {
-		// Update the list items to match our memos
-		m.memoList.SetItems(convertMemosToListItems(m.memos))
+		// Do not reset items every render; only size and view
 		m.memoList.SetSize(fixedListWidth, m.height-15) // Reserve more space for help
 		m.memoList.SetShowStatusBar(true)               // Show status bar for real items
 		memoListContent = memoListBorderStyle.Render(m.memoList.View())
