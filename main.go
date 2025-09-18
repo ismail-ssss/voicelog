@@ -334,8 +334,8 @@ func defaultConfig() Config {
 		DefaultFormat: FormatWAV,
 		MemosPath:     filepath.Join(homeDir, ConfigDir, MemosDir),
 		Theme:         "dark",
-		InputDevice:   "", // Will be set to first available input device
-		OutputDevice:  "", // Will be set to first available output device
+		InputDevice:   "", // Will be set to first available input device when needed
+		OutputDevice:  "", // Will be set to first available output device when needed
 		SampleRate:    SampleRate,
 		BitDepth:      BitDepth,
 		ChannelCount:  ChannelCount,
@@ -351,7 +351,7 @@ func defaultConfig() Config {
 			Help:   "?",
 			Quit:   "q",
 		},
-		AudioDevices: detectAudioDevices(),
+		AudioDevices: []AudioDeviceInfo{}, // Empty initially, will be populated when needed
 	}
 }
 
@@ -630,7 +630,7 @@ func initialModel() Model {
 		memos:               memos,
 		selectedIdx:         0,
 		settingsSelectedIdx: 0,
-		availableDevices:    config.AudioDevices,
+		availableDevices:    config.AudioDevices, // This will be empty initially
 		textInput:           ti,
 		help:                h,
 		memoList:            memoList,
@@ -655,6 +655,7 @@ func loadConfig() Config {
 	// Create default config if doesn't exist
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		config := defaultConfig()
+		// Don't detect audio devices during initial config creation
 		if err := saveConfig(config); err != nil {
 			log.Printf("Error saving default config: %v", err)
 		}
@@ -669,36 +670,6 @@ func loadConfig() Config {
 	var config Config
 	if err := json.Unmarshal(data, &config); err != nil {
 		return defaultConfig()
-	}
-
-	// Check if we have old-style device IDs and force refresh
-	needsDeviceRefresh := false
-	if config.InputDevice != "" {
-		// Check if it's an old-style ID (not numeric)
-		if _, err := strconv.Atoi(config.InputDevice); err != nil {
-			log.Printf("Found old-style input device ID: %s, forcing refresh", config.InputDevice)
-			config.InputDevice = ""
-			needsDeviceRefresh = true
-		}
-	}
-	if config.OutputDevice != "" {
-		// Check if it's an old-style ID (not numeric)
-		if _, err := strconv.Atoi(config.OutputDevice); err != nil {
-			log.Printf("Found old-style output device ID: %s, forcing refresh", config.OutputDevice)
-			config.OutputDevice = ""
-			needsDeviceRefresh = true
-		}
-	}
-
-	// Set default devices if not set or if we need refresh
-	setDefaultDevices(&config)
-
-	// Save config if we refreshed devices
-	if needsDeviceRefresh {
-		log.Printf("Saving updated config with new device IDs")
-		if err := saveConfig(config); err != nil {
-			log.Printf("Error saving updated config: %v", err)
-		}
 	}
 
 	// Ensure audio settings have valid values
@@ -983,12 +954,24 @@ func (m Model) handleSettingsKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 
 	case key.Matches(msg, keys.Left):
+		// Initialize audio devices before adjusting audio-related settings
+		if m.settingsSelectedIdx <= 1 { // Input/Output device settings
+			m.initializeAudioDevices()
+		}
 		m.adjustSetting(-1)
 
 	case key.Matches(msg, keys.Right):
+		// Initialize audio devices before adjusting audio-related settings
+		if m.settingsSelectedIdx <= 1 { // Input/Output device settings
+			m.initializeAudioDevices()
+		}
 		m.adjustSetting(1)
 
 	case key.Matches(msg, keys.Enter):
+		// Initialize audio devices before selecting device-related settings
+		if m.settingsSelectedIdx <= 1 { // Input/Output device settings
+			m.initializeAudioDevices()
+		}
 		m.selectSetting()
 	}
 
@@ -1137,11 +1120,29 @@ func (m *Model) adjustSetting(delta int) {
 func (m *Model) selectSetting() {
 	switch m.settingsSelectedIdx {
 	case 0, 1: // Input/Output Device selection
-		// Refresh available devices
-		m.availableDevices = detectAudioDevices()
-		m.config.AudioDevices = m.availableDevices
+		// Refresh available devices lazily then force fresh detection
+		m.initializeAudioDevices()
+		// Force a fresh detection by clearing and re-detecting
+		m.config.AudioDevices = detectAudioDevices()
+		m.availableDevices = m.config.AudioDevices
+		setDefaultDevices(&m.config)
 	default:
 		// For other settings, no special action needed
+	}
+}
+
+// Initialize audio devices - call this when actually needed
+func (m *Model) initializeAudioDevices() {
+	if len(m.config.AudioDevices) == 0 {
+		log.Printf("Initializing audio devices...")
+		m.config.AudioDevices = detectAudioDevices()
+		m.availableDevices = m.config.AudioDevices
+		setDefaultDevices(&m.config)
+
+		// Save the updated config with detected devices
+		if err := saveConfig(m.config); err != nil {
+			log.Printf("Error saving config with audio devices: %v", err)
+		}
 	}
 }
 
@@ -1305,6 +1306,9 @@ func (m *Model) updateWaveform() {
 
 // Start recording
 func (m *Model) startRecording() {
+	// Initialize audio devices if not already done
+	m.initializeAudioDevices()
+
 	m.recording = true
 	m.state = StateRecording
 	m.recordingTime = 0
@@ -1602,6 +1606,9 @@ func (m *Model) startPlayback() {
 	if len(m.memos) == 0 {
 		return
 	}
+
+	// Initialize audio devices if not already done
+	m.initializeAudioDevices()
 
 	memo := m.memos[m.selectedIdx]
 	filePath := filepath.Join(m.config.MemosPath, memo.Filename)
@@ -1955,23 +1962,8 @@ func (m Model) getDeviceName(deviceID string) string {
 
 // Get system audio info
 func getSystemAudioInfo() string {
-	// Try to get basic system audio information using PortAudio
-	if err := portaudio.Initialize(); err != nil {
-		return fmt.Sprintf("Audio system: Not available (%v)", err)
-	}
-	defer func() {
-		if err := portaudio.Terminate(); err != nil {
-			log.Printf("Error terminating PortAudio: %v", err)
-		}
-	}()
-
-	// Get device count
-	devices, err := portaudio.Devices()
-	if err != nil {
-		return fmt.Sprintf("Audio system: Error getting devices (%v)", err)
-	}
-
-	return fmt.Sprintf("Audio system: Available (%d devices found)", len(devices))
+	// Avoid initializing PortAudio here to prevent strict init/term cycles on some platforms
+	return "Audio system: Ready"
 }
 
 // Get player volume (for settings display)
