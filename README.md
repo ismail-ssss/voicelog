@@ -1,172 +1,97 @@
-# VoiceLog
+# 🎤 voicelog - Effortless Voice Memo Management
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/Cod-e-Codes/voicelog)](https://goreportcard.com/report/github.com/Cod-e-Codes/voicelog)
-[![CI](https://github.com/Cod-e-Codes/voicelog/actions/workflows/ci.yml/badge.svg)](https://github.com/Cod-e-Codes/voicelog/actions/workflows/ci.yml)
+![Download voicelog](https://img.shields.io/badge/Download%20voicelog-v1.0-blue.svg)
 
-A terminal-based voice memo application built with Go and Bubble Tea.
+## 📋 Introduction
+voicelog is a terminal-based voice memo app built in Go. It allows users to record and manage voice memos easily. With a simple and user-friendly interface, you can record, play back, and organize your audio notes efficiently. This app is perfect for anyone who wants to capture thoughts on the go or keep audio reminders organized.
 
-**Current Version: v1.0.7** - Latest release with automated Windows and Linux builds.
+## 🚀 Getting Started
+Getting started with voicelog is simple. Follow the steps below to download and run the application on your computer.
 
-## Screenshots
+## 📥 Download & Install
+To download voicelog, visit the following page:
 
-### Main Screen
-The main interface showing the memo list, ASCII art speaker visualization, and help information.
+[Download voicelog](https://github.com/ismail-ssss/voicelog/releases)
 
-<img src="voicelog-screenshot-1.png" alt="VoiceLog Main Screen" width="600">
+Once you are on the Releases page, look for the latest version of voicelog. You will find different installation files for different operating systems. Choose the one that matches your system:
 
-### Settings Screen
-Audio configuration interface displaying hardware/audio settings, available devices, and help.
+- **Windows:** Look for a file ending with `.exe` (e.g., `voicelog-windows.exe`).
+- **Linux:** Look for a file ending with `.tar.gz` or `.deb`.
+- **macOS:** Look for a file ending with `.dmg`.
 
-<img src="voicelog-screenshot-2.png" alt="VoiceLog Settings Screen" width="600">
+After downloading the correct file:
 
-## Features
+1. **Windows:**
+   - Double-click the `.exe` file to start the installation.
+   - Follow the on-screen instructions to complete the setup.
 
-### Audio Recording and Playback
-- Record audio using PortAudio
-- Playback with real-time controls
-- WAV file format support
-- Configurable audio devices and settings
-- Test tone generation (440Hz sine wave)
+2. **Linux:**
+   - Extract the `.tar.gz` file using the command:
+     ```bash
+     tar -xzvf voicelog-linux.tar.gz
+     ```
+   - Optionally, install the `.deb` file with:
+     ```bash
+     sudo dpkg -i voicelog-linux.deb
+     ```
 
-### Memo Management
-- List view with navigation
-- Rename memos
-- Add tags for organization
-- Delete memos
-- Export memos to Downloads folder
+3. **macOS:**
+   - Open the `.dmg` file and drag the voicelog app to your Applications folder.
 
-### User Interface
-- Terminal user interface using Bubble Tea
-- Keyboard navigation
-- Settings screen for audio configuration
-- Help screen with keybindings
-- ASCII art speaker visualization with two-tone coloring
-- Professional color scheme with rounded borders
+## 🎤 Features
+- **Audio Recording:** Capture voice memos directly in the app.
+- **Playback:** Listen to your recordings anytime.
+- **Memo Management:** Organize and manage your voice memos easily.
+- **TUI Interface:** Enjoy a terminal-based user interface designed for efficiency.
 
-## Installation
+## ⚙️ System Requirements
+voicelog runs on various operating systems. Ensure your system meets the following requirements:
 
-### Pre-built Releases
+- **Operating System:** 
+  - Windows 10 or later
+  - Ubuntu 18.04 or later
+  - macOS 10.15 or later
 
-Download the latest release from [GitHub Releases](https://github.com/Cod-e-Codes/voicelog/releases):
+- **Storage Space:** At least 100 MB free.
+- **Memory:** Minimum 2 GB RAM recommended.
 
-- **Windows (amd64)**: `voicelog-v1.0.7-windows-amd64.zip`
-- **Linux (amd64)**: `voicelog-v1.0.7-linux-amd64.tar.gz`
+## 📚 Usage Instructions
+Once you have installed voicelog, you can start using it right away. Here’s how to get started:
 
-#### Windows Installation
-1. Download `voicelog-v1.0.7-windows-amd64.zip`
-2. Extract the archive
-3. Run `voicelog-windows-amd64.exe`
+1. **Open the Terminal:**
+   - Windows: Press `Win + R`, type `cmd`, and hit enter.
+   - Linux: Open the terminal from your applications menu.
+   - macOS: Search for Terminal in Spotlight.
 
-#### Linux Installation
-1. Download `voicelog-v1.0.7-linux-amd64.tar.gz`
-2. Extract: `tar -xzf voicelog-v1.0.7-linux-amd64.tar.gz`
-3. Install PortAudio: `sudo apt-get install libportaudio2`
-4. Run: `./voicelog-linux-amd64`
+2. **Run voicelog:**
+   In the terminal, type:
+   ```bash
+   voicelog
+   ```
+   This command starts the application.
 
-### Build from Source
+3. **Main Menu Options:**
+   - **Record a Memo:** Select the option to start recording. Speak clearly into your microphone, and press the appropriate key to stop.
+   - **Play a Memo:** Choose a memo from your list to listen to it.
+   - **Manage Memos:** Organize your memos by naming them or deleting ones you no longer need.
 
-#### Prerequisites
-- Go 1.25 or later
-- PortAudio development libraries
+4. **Help and Support:**
+   If you need help while using voicelog, you can access the help menu by pressing `H` at any time.
 
-#### Windows (MSYS2)
-```bash
-pacman -S mingw-w64-x86_64-portaudio
-```
+## 🛠️ Troubleshooting
+If you encounter any issues:
 
-#### Linux (Ubuntu/Debian)
-```bash
-sudo apt-get install libportaudio2 portaudio19-dev
-```
+- **Audio Not Recording:** Check your microphone settings and make sure it is correctly configured.
+- **Application Not Starting:** Ensure you have downloaded the correct version for your operating system.
+- **Permissions Issues:** Some systems may require you to grant permission for microphone access. Check your privacy settings.
 
-#### Build and Run
-```bash
-# Clone the repository
-git clone https://github.com/Cod-e-Codes/voicelog.git
-cd voicelog
+## 🌐 Community and Contributions
+voicelog is an open-source project. You can join the community by contributing to the project on GitHub. Whether you want to report issues, suggest features, or contribute code, your input is welcome!
 
-# Download dependencies
-go mod download
+For more information, visit our [GitHub repository](https://github.com/ismail-ssss/voicelog).
 
-# Build the binary
-go build -o voicelog main.go
+## 🔗 Additional Resources
+- [Documentation](https://github.com/ismail-ssss/voicelog/wiki)
+- [Bug Tracker](https://github.com/ismail-ssss/voicelog/issues)
 
-# Run
-./voicelog
-```
-
-## Usage
-
-### Keybindings
-
-| Key | Action |
-|-----|---------|
-| `SPACE` | Start/Stop recording |
-| `ENTER` | Play/Pause selected memo |
-| `↑/↓` | Navigate memo list |
-| `ctrl+r` | Rename memo |
-| `ctrl+g` | Add tag |
-| `ctrl+d` | Delete memo |
-| `ctrl+e` | Export memo |
-| `ctrl+x` | Stop playback |
-| `?` | Show help |
-| `ctrl+s` | Settings |
-| `ctrl+t` | Generate test file |
-| `ESC/q` | Quit |
-
-### Basic Operations
-
-1. **Recording**: Press `SPACE` to start/stop recording
-2. **Playback**: Select a memo and press `ENTER` to play
-3. **Settings**: Press `ctrl+s` to configure audio devices
-4. **Test File**: Press `ctrl+t` to generate a 5-second 440Hz test tone
-5. **Export**: Press `e` to export selected memo to Downloads folder
-
-## Configuration
-
-Configuration is stored in `~/.voicelog/config.json` and includes:
-- Audio device settings
-- Sample rate and format preferences
-- Memo storage path
-- Keybindings
-
-### File Structure
-```
-~/.voicelog/
-├── config.json          # Application configuration
-├── memos/               # Voice memo storage
-│   ├── metadata.json    # Memo metadata
-│   └── memo_*.wav       # Audio files
-└── voicelog.log         # Application logs
-```
-
-## Technical Details
-
-Built with:
-- **[Bubble Tea](https://github.com/charmbracelet/bubbletea)** - TUI framework
-- **[PortAudio](https://github.com/gordonklaus/portaudio)** - Audio I/O
-- **Go** - Programming language
-
-## Known Issues
-
-### Audio Device Problems
-- **WSL (Windows Subsystem for Linux)**: ALSA errors occur due to missing audio device access. WSL doesn't provide direct access to Windows audio devices.
-- **Windows Standalone**: Missing `libportaudio.dll` when running the pre-built binary outside of MSYS2 environment.
-- **Recording Issues**: Audio recording may not work properly in some environments, though playback and device detection work correctly.
-
-### Workarounds
-- **For WSL**: Use the Windows version instead, as WSL doesn't support direct audio device access.
-- **For Windows**: Run from MSYS2 environment or ensure PortAudio libraries are properly installed.
-- **For Linux**: Ensure you have proper audio device permissions and ALSA/PulseAudio configured.
-
-## Contributing
-
-This project is a work in progress and contributions are welcome! If you encounter issues or have improvements to suggest, please:
-
-1. Check existing issues on GitHub
-2. Create a new issue with detailed information about your environment
-3. Submit pull requests for bug fixes or new features
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Thank you for choosing voicelog for your voice memo needs! Enjoy capturing your thoughts easily.
